@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4CCB155D23789054008812D0 /* CategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB155C23789054008812D0 /* CategoryViewController.swift */; };
 		980F9D0E2373CE0C0092025A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 980F9D0D2373CE0C0092025A /* AppDelegate.swift */; };
 		980F9D102373CE0C0092025A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 980F9D0F2373CE0C0092025A /* SceneDelegate.swift */; };
 		980F9D122373CE0C0092025A /* TodoListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 980F9D112373CE0C0092025A /* TodoListViewController.swift */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4CCB155C23789054008812D0 /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
 		980F9D0A2373CE0C0092025A /* Todoey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todoey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		980F9D0D2373CE0C0092025A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		980F9D0F2373CE0C0092025A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -74,6 +76,7 @@
 		986DF7CA237755880079F132 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				4CCB155C23789054008812D0 /* CategoryViewController.swift */,
 				980F9D112373CE0C0092025A /* TodoListViewController.swift */,
 			);
 			path = Controllers;
@@ -181,6 +184,7 @@
 				980F9D0E2373CE0C0092025A /* AppDelegate.swift in Sources */,
 				986DF7D52377727E0079F132 /* TodoModel.swift in Sources */,
 				980F9D102373CE0C0092025A /* SceneDelegate.swift in Sources */,
+				4CCB155D23789054008812D0 /* CategoryViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

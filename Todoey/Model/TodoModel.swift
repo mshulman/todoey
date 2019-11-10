@@ -12,9 +12,11 @@ import UIKit
 
 class TodoModel  {
     var items: [TodoItem] = []
+    var categories: [TodoCategory] = []
+    
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-    func saveItems() {
+    func saveData() {
         if context.hasChanges {
             do {
                 try context.save()
@@ -24,7 +26,25 @@ class TodoModel  {
         }
     }
     
-    func loadItems(with request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()) {
+    func loadCategories(with request: NSFetchRequest<TodoCategory> = TodoCategory.fetchRequest()) {
+        do {
+            categories = try context.fetch(request)
+        } catch {
+            print("Error fetching data from context \(error)")
+        }
+    }
+    
+    func loadItems(with request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest(), category: TodoCategory) {
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory = %@", category)
+
+        if let selectedPredicate = request.predicate {      // if the request already had a predicate set
+            let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [selectedPredicate, ])
+            request.predicate = compoundPredicate
+        } else {
+            request.predicate = categoryPredicate
+        }
+        
         do {
             items = try context.fetch(request)
         } catch {
@@ -51,7 +71,7 @@ class TodoModel  {
         item3.title = "Destroy Demogorgon"
         item3.isDone = false
         self.items.append(item3)
-        saveItems()
+        saveData()
     }
     
 }

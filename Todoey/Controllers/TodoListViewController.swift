@@ -13,10 +13,17 @@ class TodoListViewController: UITableViewController {
     
     var brain = TodoModel()
     
+    var selectedCategory: TodoCategory? {
+        didSet {
+            brain.loadItems(category: selectedCategory!)
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        brain.loadItems()
+        
+        self.navigationController?.navigationBar.tintColor = UIColor.white
         
     }
 
@@ -50,7 +57,7 @@ class TodoListViewController: UITableViewController {
 //        context.delete(brain.items[indexPath.row])
 //        brain.items.remove(at: indexPath.row)       // delete instead of marking as done
         
-        brain.saveItems()
+        brain.saveData()
         
         tableView.reloadData()
         
@@ -71,9 +78,10 @@ class TodoListViewController: UITableViewController {
             let newItem = TodoItem(context: self.brain.context)
             newItem.title = textField.text!
             newItem.isDone = false
+            newItem.parentCategory = self.selectedCategory
             self.brain.items.append(newItem)
             
-            self.brain.saveItems()
+            self.brain.saveData()
             
             self.tableView.reloadData()
         }
@@ -95,9 +103,9 @@ extension TodoListViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         
         if searchBar.text != "" {
-            brain.loadItems(with: createFetchRequest(contains: searchBar.text!))
+            brain.loadItems(with: createFetchRequest(contains: searchBar.text!), category: selectedCategory!)
         } else {
-            brain.loadItems()
+            brain.loadItems(category: selectedCategory!)
         }
         tableView.reloadData()
     }
@@ -111,14 +119,14 @@ extension TodoListViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.count == 0 {
-            brain.loadItems()
+            brain.loadItems(category: selectedCategory!)
             tableView.reloadData()
             
             DispatchQueue.main.async {
                 searchBar.resignFirstResponder()    // hide keyboard and let cursor go
             }
         } else {
-            brain.loadItems(with: createFetchRequest(contains: searchText))
+            brain.loadItems(with: createFetchRequest(contains: searchText), category: selectedCategory!)
             tableView.reloadData()
 
         }
