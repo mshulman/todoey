@@ -24,17 +24,16 @@ class TodoModel  {
         }
     }
     
-    func loadItems() {
-        let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
+    func loadItems(with request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()) {
         do {
             items = try context.fetch(request)
         } catch {
             print("Error fetching data from context \(error)")
         }
 
-        if self.items.count == 0 {
-            loadSampleData()
-        }
+//        if self.items.count == 0 {
+//            loadSampleData()
+//        }
     }
     
     func loadSampleData(){

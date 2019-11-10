@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import CoreData
 
-class TodoListViewController: UITableViewController{
+class TodoListViewController: UITableViewController {
     
     var brain = TodoModel()
     
@@ -56,7 +57,7 @@ class TodoListViewController: UITableViewController{
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
-    //MARK - Add New Items
+//MARK: - Add New Items
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
@@ -85,6 +86,41 @@ class TodoListViewController: UITableViewController{
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
-    
 }
 
+//MARK: - Search bar methods
+
+extension TodoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        if searchBar.text != "" {
+            brain.loadItems(with: createFetchRequest(contains: searchBar.text!))
+        } else {
+            brain.loadItems()
+        }
+        tableView.reloadData()
+    }
+    
+    func createFetchRequest(contains string: String) -> NSFetchRequest<TodoItem> {
+        let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", string)
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        return request
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.count == 0 {
+            brain.loadItems()
+            tableView.reloadData()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()    // hide keyboard and let cursor go
+            }
+        } else {
+            brain.loadItems(with: createFetchRequest(contains: searchText))
+            tableView.reloadData()
+
+        }
+    }
+}
