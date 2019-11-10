@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  TodoListViewController.swift
 //  Todoey
 //
 //  Created by Michael Shulman on 11/6/19.
@@ -10,27 +10,26 @@ import UIKit
 
 class TodoListViewController: UITableViewController{
     
-    var todoModel =  TodoModel()
-
+    var brain = TodoModel()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        
-        todoModel.loadItems()
+        brain.loadItems()
         
     }
 
     //MARK - TableView Datasource Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return todoModel.items.count
+        return brain.items.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
-        let item = todoModel.items[indexPath.row]
+        let item = brain.items[indexPath.row]
         cell.textLabel?.text = item.title
         cell.accessoryType = item.isDone ? .checkmark : .none
         
@@ -43,10 +42,14 @@ class TodoListViewController: UITableViewController{
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // print(itemArray[indexPath.row])
         
-        let item = todoModel.items[indexPath.row]
+        let item = brain.items[indexPath.row]
         item.isDone.toggle()
         
-        todoModel.saveItems()
+//        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+//        context.delete(brain.items[indexPath.row])
+//        brain.items.remove(at: indexPath.row)       // delete instead of marking as done
+        
+        brain.saveItems()
         
         tableView.reloadData()
         
@@ -64,11 +67,12 @@ class TodoListViewController: UITableViewController{
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             // what will happen once the user clicks the Add Item button on our UIAlert
             
-            let newItem = TodoItem()
+            let newItem = TodoItem(context: self.brain.context)
             newItem.title = textField.text!
-            self.todoModel.items.append(newItem)
+            newItem.isDone = false
+            self.brain.items.append(newItem)
             
-            self.todoModel.saveItems()
+            self.brain.saveItems()
             
             self.tableView.reloadData()
         }
@@ -81,11 +85,6 @@ class TodoListViewController: UITableViewController{
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
-    
-    //MARK - Model Manipulation methods
-    
-
-    
     
 }
 
