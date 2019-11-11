@@ -8,8 +8,10 @@
 
 import Foundation
 import RealmSwift
+import ChameleonFramework
 
 class TodoCategory: Object {
     @objc dynamic var name: String = ""
+    @objc dynamic var color: String = FlatWhite().hexValue()
     let items = List<TodoItem>()
 }

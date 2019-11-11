@@ -21,7 +21,7 @@ class CategoryViewController: SwipeTableViewController {
         
         brain.loadCategories()
         
-        tableView.rowHeight = 80
+        tableView.separatorStyle = .none
 
     }
 
@@ -45,7 +45,10 @@ class CategoryViewController: SwipeTableViewController {
             if categories.count == 0 {
                 cell.textLabel?.text =  "No Categories Added Yet"
             } else {
-                cell.textLabel?.text = brain.categories?[indexPath.row].name
+                if let category = brain.categories?[indexPath.row] {
+                    cell.textLabel?.text = category.name
+                    cell.backgroundColor = UIColor(hexString: category.color)
+                }
             }
         } else {
             cell.textLabel?.text =  "No Categories Added Yet"
@@ -95,9 +98,14 @@ class CategoryViewController: SwipeTableViewController {
         
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             // what will happen once the user clicks the Add Item button on our UIAlert
+            guard let newCategoryName = textField.text, !newCategoryName.isEmpty else {
+                print("New category name is empty.")
+                return // or break, continue, throw
+            }
             
             let newCategory = TodoCategory()
             newCategory.name = textField.text!
+            newCategory.color = UIColor.randomFlat().hexValue()
             
             self.brain.save(category: newCategory)
             
