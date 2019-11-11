@@ -7,15 +7,16 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class TodoListViewController: UITableViewController {
     
     var brain = TodoModel()
+    let realm = try! Realm()
     
     var selectedCategory: TodoCategory? {
         didSet {
-            brain.loadItems(category: selectedCategory!)
+            brain.loadItems(selectedCategory: selectedCategory!)
         }
     }
     
@@ -30,19 +31,26 @@ class TodoListViewController: UITableViewController {
     //MARK - TableView Datasource Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return brain.items.count
+        return max(brain.items?.count ?? 1, 1)
+        
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
-        let item = brain.items[indexPath.row]
-        cell.textLabel?.text = item.title
-        cell.accessoryType = item.isDone ? .checkmark : .none
-        
+        if let items = brain.items {
+            if items.count == 0 {
+                cell.textLabel?.text = "No Items Added"
+            } else {
+                let item = brain.items?[indexPath.row]
+                cell.textLabel?.text = item?.title
+                cell.accessoryType = item!.isDone ? .checkmark : .none
+            }
+        } else {
+            cell.textLabel?.text = "No Items Added"
+        }
         return cell
-        
     }
     
     //MARK - TableView Delegate Methods
@@ -50,17 +58,24 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // print(itemArray[indexPath.row])
         
-        let item = brain.items[indexPath.row]
-        item.isDone.toggle()
+        guard let items = brain.items else {
+            tableView.deselectRow(at: indexPath, animated: true)
+            return
+        }
         
-//        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-//        context.delete(brain.items[indexPath.row])
-//        brain.items.remove(at: indexPath.row)       // delete instead of marking as done
-        
-        brain.saveData()
-        
-        tableView.reloadData()
-        
+        if items.count > 0 {
+            if let item = brain.items?[indexPath.row] {
+                do {
+                    try realm.write {
+    //                  realm.delete(item)   // to delete instead of checkmark
+                        item.isDone.toggle()
+                    }
+                } catch {
+                    print ("Error saving done status \(error)")
+                }
+                tableView.reloadData()
+            }
+        }
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
@@ -75,13 +90,18 @@ class TodoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             // what will happen once the user clicks the Add Item button on our UIAlert
             
-            let newItem = TodoItem(context: self.brain.context)
-            newItem.title = textField.text!
-            newItem.isDone = false
-            newItem.parentCategory = self.selectedCategory
-            self.brain.items.append(newItem)
-            
-            self.brain.saveData()
+            if let currentCategory = self.selectedCategory {
+                do {
+                    try self.realm.write {
+                        let newItem = TodoItem()
+                        newItem.title = textField.text!
+                        newItem.dateCreated = Date()
+                        currentCategory.items.append(newItem)
+                    }
+                } catch {
+                    print("Error saving new items \(error)")
+                }
+            }
             
             self.tableView.reloadData()
         }
@@ -100,35 +120,26 @@ class TodoListViewController: UITableViewController {
 
 extension TodoListViewController: UISearchBarDelegate {
     
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        
         if searchBar.text != "" {
-            brain.loadItems(with: createFetchRequest(contains: searchBar.text!), category: selectedCategory!)
-        } else {
-            brain.loadItems(category: selectedCategory!)
+            brain.items = brain.items?.filteredBy(searchBar.text!)
+            tableView.reloadData()
         }
-        tableView.reloadData()
     }
-    
-    func createFetchRequest(contains string: String) -> NSFetchRequest<TodoItem> {
-        let request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest()
-        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", string)
-        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-        return request
-    }
-    
+        
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.count == 0 {
-            brain.loadItems(category: selectedCategory!)
+            brain.loadItems(selectedCategory: selectedCategory!)
             tableView.reloadData()
             
-            DispatchQueue.main.async {
-                searchBar.resignFirstResponder()    // hide keyboard and let cursor go
-            }
-        } else {
-            brain.loadItems(with: createFetchRequest(contains: searchText), category: selectedCategory!)
+//            DispatchQueue.main.async {
+//                searchBar.resignFirstResponder()    // hide keyboard and let cursor go
+//            }
+        }
+        else {
+            brain.items = brain.items?.filteredBy(searchBar.text!)
             tableView.reloadData()
-
         }
     }
 }

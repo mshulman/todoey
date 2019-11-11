@@ -7,12 +7,14 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 
 class CategoryViewController: UITableViewController {
     
     var brain = TodoModel()
+    
+    let realm = try! Realm()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,15 +27,26 @@ class CategoryViewController: UITableViewController {
     // MARK: - TableView Data Source Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return brain.categories.count
+        if let categories = brain.categories {
+            return max(categories.count, 1)
+        } else {
+            return 1
+        }
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-        let category = brain.categories[indexPath.row]
-        cell.textLabel?.text = category.name
+        if let categories = brain.categories {
+            if categories.count == 0 {
+                cell.textLabel?.text =  "No Categories Added Yet"
+            } else {
+                cell.textLabel?.text = brain.categories?[indexPath.row].name
+            }
+        } else {
+            cell.textLabel?.text =  "No Categories Added Yet"
+        }
         
         return cell
         
@@ -49,7 +62,7 @@ class CategoryViewController: UITableViewController {
         if segue.identifier == "goToItems" {
             let destinationVC = segue.destination as! TodoListViewController
             if let indexPath = tableView.indexPathForSelectedRow {
-                destinationVC.selectedCategory = brain.categories[indexPath.row]
+                destinationVC.selectedCategory = brain.categories?[indexPath.row]
             }
         }
     }
@@ -69,11 +82,10 @@ class CategoryViewController: UITableViewController {
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             // what will happen once the user clicks the Add Item button on our UIAlert
             
-            let newCategory = TodoCategory(context: self.brain.context)
+            let newCategory = TodoCategory()
             newCategory.name = textField.text!
-            self.brain.categories.append(newCategory)
             
-            self.brain.saveData()
+            self.brain.save(category: newCategory)
             
             self.tableView.reloadData()
         }

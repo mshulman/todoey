@@ -7,72 +7,37 @@
 //
 
 import Foundation
-import CoreData
-import UIKit
+import RealmSwift
 
 class TodoModel  {
-    var items: [TodoItem] = []
-    var categories: [TodoCategory] = []
+    var items: Results<TodoItem>?
+    var categories: Results<TodoCategory>?
+    var realm = try! Realm()
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-    func saveData() {
-        if context.hasChanges {
-            do {
-                try context.save()
-            } catch {
-                print("Error saving context \(error)")
+    
+    func save(category: TodoCategory) {
+        do {
+            try realm.write {
+                realm.add(category)
             }
-        }
-    }
-    
-    func loadCategories(with request: NSFetchRequest<TodoCategory> = TodoCategory.fetchRequest()) {
-        do {
-            categories = try context.fetch(request)
         } catch {
-            print("Error fetching data from context \(error)")
+            print("Error saving category \(error)")
         }
     }
-    
-    func loadItems(with request: NSFetchRequest<TodoItem> = TodoItem.fetchRequest(), category: TodoCategory) {
         
-        let categoryPredicate = NSPredicate(format: "parentCategory = %@", category)
+    func loadCategories() {
+        categories = realm.objects(TodoCategory.self)
+    }
 
-        if let selectedPredicate = request.predicate {      // if the request already had a predicate set
-            let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [selectedPredicate, ])
-            request.predicate = compoundPredicate
-        } else {
-            request.predicate = categoryPredicate
-        }
-        
-        do {
-            items = try context.fetch(request)
-        } catch {
-            print("Error fetching data from context \(error)")
-        }
+    func loadItems(selectedCategory: TodoCategory) {
+        items = selectedCategory.items.sorted(byKeyPath: "title", ascending: true)
+    }
+}
 
-//        if self.items.count == 0 {
-//            loadSampleData()
-//        }
+extension Results where Element: TodoItem {
+    func filteredBy (_ substring: String) -> Results<TodoItem>? {
+        return self.filter("title CONTAINS[cd] %@", substring).sorted(byKeyPath: "dateCreated", ascending: true) as? Results<TodoItem>
     }
-    
-    func loadSampleData(){
-        let item1 = TodoItem(context: self.context)
-        item1.title = "Find Mike"
-        item1.isDone = false
-        self.items.append(item1)
-        
-        let item2 = TodoItem(context: self.context)
-        item2.title = "Buy Eggos"
-        item2.isDone = false
-        self.items.append(item2)
-        
-        let item3 = TodoItem(context: self.context)
-        item3.title = "Destroy Demogorgon"
-        item3.isDone = false
-        self.items.append(item3)
-        saveData()
-    }
-    
 }
 
