@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
     
     var brain = TodoModel()
     let realm = try! Realm()
@@ -25,6 +25,7 @@ class TodoListViewController: UITableViewController {
         // Do any additional setup after loading the view.
         
         self.navigationController?.navigationBar.tintColor = UIColor.white
+        tableView.rowHeight = 80
         
     }
 
@@ -37,8 +38,8 @@ class TodoListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
-        
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+                
         if let items = brain.items {
             if items.count == 0 {
                 cell.textLabel?.text = "No Items Added"
@@ -79,6 +80,21 @@ class TodoListViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
+    
+    // MARK: - Data Manipulation Methods
+    
+    override func deleteFromModel(at indexPath: IndexPath) {
+        if let itemForDeletion = self.brain.items?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(itemForDeletion)   // to delete instead of checkmark
+                }
+            } catch {
+                print ("Error deleting item \(error)")
+            }
+        }
+    }
+    
 //MARK: - Add New Items
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -143,3 +159,5 @@ extension TodoListViewController: UISearchBarDelegate {
         }
     }
 }
+
+

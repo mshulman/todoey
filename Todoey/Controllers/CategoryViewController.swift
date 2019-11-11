@@ -10,7 +10,7 @@ import UIKit
 import RealmSwift
 
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
     
     var brain = TodoModel()
     
@@ -20,6 +20,8 @@ class CategoryViewController: UITableViewController {
         super.viewDidLoad()
         
         brain.loadCategories()
+        
+        tableView.rowHeight = 80
 
     }
 
@@ -34,10 +36,11 @@ class CategoryViewController: UITableViewController {
         }
     }
 
+
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+
         if let categories = brain.categories {
             if categories.count == 0 {
                 cell.textLabel?.text =  "No Categories Added Yet"
@@ -70,6 +73,17 @@ class CategoryViewController: UITableViewController {
     
     // MARK: - Data Manipulation Methods
     
+    override func deleteFromModel(at indexPath: IndexPath) {
+        if let categoryForDeletion = self.brain.categories?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)   // to delete instead of checkmark
+                }
+            } catch {
+                print ("Error deleting category \(error)")
+            }
+        }
+    }
     
     
     // MARK: Add New Categories
@@ -98,8 +112,6 @@ class CategoryViewController: UITableViewController {
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
-    
-    
-
-
 }
+
+
