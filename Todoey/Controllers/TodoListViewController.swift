@@ -25,7 +25,7 @@ class TodoListViewController: SwipeTableViewController {
         // Do any additional setup after loading the view.
         
         self.navigationController?.navigationBar.tintColor = UIColor.white
-        tableView.rowHeight = 80
+        
         
     }
 
