@@ -8,8 +8,10 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class TodoListViewController: SwipeTableViewController {
+    @IBOutlet weak var searchBar: UISearchBar!
     
     var brain = TodoModel()
     let realm = try! Realm()
@@ -24,8 +26,53 @@ class TodoListViewController: SwipeTableViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        self.navigationController?.navigationBar.tintColor = UIColor.white
+        tableView.separatorStyle = .none
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        guard let colorHex = selectedCategory?.color else {
+            fatalError("Color attribute not valid")
+        }
+        updateNavBarWithColorHex(colorHex)
+        title = selectedCategory?.name
+        searchBar.barTintColor = UIColor(hexString: colorHex)
+        searchBar.searchTextField.backgroundColor = FlatWhite()
+
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        updateNavBarWithColorHex("1D9BF6")
+    }
+    
+    func updateNavBarWithColorHex(_ colorHex: String) {
         
+        guard let navBar = navigationController?.navigationBar else {
+            fatalError("Navigation Controller doesn't exist.")
+        }
+
+        guard let color = UIColor(hexString: colorHex) else {
+            fatalError("Color attribute not valid")
+        }
+
+        
+        if #available(iOS 13.0, *) {
+            let appearance = UINavigationBarAppearance().self
+            
+            appearance.backgroundColor = color
+            appearance.largeTitleTextAttributes = [
+                NSAttributedString.Key.foregroundColor: ContrastColorOf(color, returnFlat: true)
+            ]
+            
+            navBar.standardAppearance = appearance
+            navBar.compactAppearance = appearance
+            navBar.scrollEdgeAppearance = appearance
+            navBar.tintColor = ContrastColorOf(color, returnFlat: true)
+            
+        } else {
+            navBar.barTintColor = color
+            navBar.tintColor = ContrastColorOf(color, returnFlat: true)
+            navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(color, returnFlat: true)]
+        }
         
     }
 
@@ -44,6 +91,14 @@ class TodoListViewController: SwipeTableViewController {
             if items.count == 0 {
                 cell.textLabel?.text = "No Items Added"
             } else {
+                
+                guard let color = UIColor(hexString: selectedCategory!.color)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(items.count)) else {
+                        fatalError("error darkening parent category color")
+                }
+                
+                cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+                    
                 let item = brain.items?[indexPath.row]
                 cell.textLabel?.text = item?.title
                 cell.accessoryType = item!.isDone ? .checkmark : .none

@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 
 class CategoryViewController: SwipeTableViewController {
@@ -23,6 +24,16 @@ class CategoryViewController: SwipeTableViewController {
         
         tableView.separatorStyle = .none
 
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        guard let navBar = navigationController?.navigationBar else {
+            fatalError("Navigation bar is not present")
+        }
+
+        navBar.barTintColor = FlatWhite()
+        navBar.backgroundColor = FlatWhite()
+        navBar.tintColor = ContrastColorOf(FlatWhite(), returnFlat: true)
     }
 
 
@@ -47,7 +58,9 @@ class CategoryViewController: SwipeTableViewController {
             } else {
                 if let category = brain.categories?[indexPath.row] {
                     cell.textLabel?.text = category.name
+                    let color = UIColor(hexString: category.color)
                     cell.backgroundColor = UIColor(hexString: category.color)
+                    cell.textLabel?.textColor = ContrastColorOf(color!, returnFlat: true)
                 }
             }
         } else {
@@ -62,6 +75,7 @@ class CategoryViewController: SwipeTableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "goToItems", sender: self)
+        tableView.reloadData()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
