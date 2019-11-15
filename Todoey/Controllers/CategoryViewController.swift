@@ -40,11 +40,10 @@ class CategoryViewController: SwipeTableViewController {
     // MARK: - TableView Data Source Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let categories = brain.categories {
-            return max(categories.count, 1)
-        } else {
-            return 1
+        guard let categories = brain.categories else {
+            fatalError("categories is nil")
         }
+        return categories.count
     }
 
 

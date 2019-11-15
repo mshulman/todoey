@@ -79,8 +79,10 @@ class TodoListViewController: SwipeTableViewController {
     //MARK - TableView Datasource Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return max(brain.items?.count ?? 1, 1)
-        
+        guard let items = brain.items else {
+            fatalError("items is nil")
+        }
+        return items.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
